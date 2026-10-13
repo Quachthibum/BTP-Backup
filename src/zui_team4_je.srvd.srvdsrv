@@ -1,0 +1,8 @@
+@EndUserText.label: 'Journal Entry UI Service'
+define service ZUI_TEAM4_JE {
+  expose ZC_TEAM4_JEH           as JournalEntries;
+  expose ZC_TEAM4_JEI           as JournalEntryItems;
+  expose ZI_TEAM4_CUSTOMER_VH   as CustomerValueHelp;
+  expose ZI_TEAM4_SALESORDER_VH as SalesOrderValueHelp;
+  expose ZC_TEAM4_JE_KPI        as JournalEntryKPI;
+}

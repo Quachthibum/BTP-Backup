@@ -1,0 +1,224 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<abapGit version="v1.0.0" serializer="LCL_OBJECT_MSAG" serializer_version="v1.0.0">
+ <asx:abap xmlns:asx="http://www.sap.com/abapxml" version="1.0">
+  <asx:values>
+   <T100A>
+    <ARBGB>ZFI_TEAM4_JE</ARBGB>
+    <MASTERLANG>E</MASTERLANG>
+    <STEXT>Journal Entry Workbench Messages</STEXT>
+   </T100A>
+   <T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>ZFI_TEAM4_JE</ARBGB>
+     <MSGNR>001</MSGNR>
+     <TEXT>Company Code is required</TEXT>
+    </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>ZFI_TEAM4_JE</ARBGB>
+     <MSGNR>002</MSGNR>
+     <TEXT>Net Amount must be greater than zero</TEXT>
+    </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>ZFI_TEAM4_JE</ARBGB>
+     <MSGNR>003</MSGNR>
+     <TEXT>Due Date cannot be earlier than Posting Date</TEXT>
+    </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>ZFI_TEAM4_JE</ARBGB>
+     <MSGNR>004</MSGNR>
+     <TEXT>Invalid Journal Entry status</TEXT>
+    </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>ZFI_TEAM4_JE</ARBGB>
+     <MSGNR>005</MSGNR>
+     <TEXT>Cleared Journal Entry cannot be modified</TEXT>
+    </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>ZFI_TEAM4_JE</ARBGB>
+     <MSGNR>006</MSGNR>
+     <TEXT>Customer &amp;1 does not exist in master data</TEXT>
+    </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>ZFI_TEAM4_JE</ARBGB>
+     <MSGNR>007</MSGNR>
+     <TEXT>Company Code &amp;1 is invalid</TEXT>
+    </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>ZFI_TEAM4_JE</ARBGB>
+     <MSGNR>008</MSGNR>
+     <TEXT>Tax Rate must be between 0 and 100</TEXT>
+    </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>ZFI_TEAM4_JE</ARBGB>
+     <MSGNR>009</MSGNR>
+     <TEXT>G/L Account is required</TEXT>
+    </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>ZFI_TEAM4_JE</ARBGB>
+     <MSGNR>010</MSGNR>
+     <TEXT>Item Amount must be greater than zero</TEXT>
+    </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>ZFI_TEAM4_JE</ARBGB>
+     <MSGNR>011</MSGNR>
+     <TEXT>Debit/Credit must be D (Debit), C (Credit), S, or H</TEXT>
+    </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>ZFI_TEAM4_JE</ARBGB>
+     <MSGNR>012</MSGNR>
+     <TEXT>Item currency &amp;1 does not match header currency &amp;2</TEXT>
+    </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>ZFI_TEAM4_JE</ARBGB>
+     <MSGNR>013</MSGNR>
+     <TEXT>Journal entry is not balanced (Debit: &amp;1 vs Credit: &amp;2)</TEXT>
+    </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>ZFI_TEAM4_JE</ARBGB>
+     <MSGNR>014</MSGNR>
+     <TEXT>Selected Sales Order &amp;1 does not exist</TEXT>
+    </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>ZFI_TEAM4_JE</ARBGB>
+     <MSGNR>015</MSGNR>
+     <TEXT>Sales Order &amp;1 does not belong to Customer &amp;2</TEXT>
+    </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>ZFI_TEAM4_JE</ARBGB>
+     <MSGNR>016</MSGNR>
+     <TEXT>Posting lines can only be generated for parked entries</TEXT>
+    </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>ZFI_TEAM4_JE</ARBGB>
+     <MSGNR>017</MSGNR>
+     <TEXT>Tax Amount or Gross Amount is invalid</TEXT>
+    </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>ZFI_TEAM4_JE</ARBGB>
+     <MSGNR>018</MSGNR>
+     <TEXT>Transaction Currency is required</TEXT>
+    </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>ZFI_TEAM4_JE</ARBGB>
+     <MSGNR>019</MSGNR>
+     <TEXT>Posting items already exist</TEXT>
+    </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>ZFI_TEAM4_JE</ARBGB>
+     <MSGNR>020</MSGNR>
+     <TEXT>Posting items generated successfully</TEXT>
+    </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>ZFI_TEAM4_JE</ARBGB>
+     <MSGNR>021</MSGNR>
+     <TEXT>Posting items could not be generated</TEXT>
+    </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>ZFI_TEAM4_JE</ARBGB>
+     <MSGNR>022</MSGNR>
+     <TEXT>Only parked entries can be posted</TEXT>
+    </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>ZFI_TEAM4_JE</ARBGB>
+     <MSGNR>023</MSGNR>
+     <TEXT>Journal entry already has a document number</TEXT>
+    </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>ZFI_TEAM4_JE</ARBGB>
+     <MSGNR>024</MSGNR>
+     <TEXT>Generate posting items before posting</TEXT>
+    </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>ZFI_TEAM4_JE</ARBGB>
+     <MSGNR>025</MSGNR>
+     <TEXT>Journal entry &amp;1 posted successfully</TEXT>
+    </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>ZFI_TEAM4_JE</ARBGB>
+     <MSGNR>026</MSGNR>
+     <TEXT>Journal entry could not be posted</TEXT>
+    </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>ZFI_TEAM4_JE</ARBGB>
+     <MSGNR>027</MSGNR>
+     <TEXT>Only posted open entries can be cleared</TEXT>
+    </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>ZFI_TEAM4_JE</ARBGB>
+     <MSGNR>028</MSGNR>
+     <TEXT>Document number is required before clearing</TEXT>
+    </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>ZFI_TEAM4_JE</ARBGB>
+     <MSGNR>029</MSGNR>
+     <TEXT>Journal entry is already cleared</TEXT>
+    </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>ZFI_TEAM4_JE</ARBGB>
+     <MSGNR>030</MSGNR>
+     <TEXT>Journal entry cleared with document &amp;1</TEXT>
+    </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>ZFI_TEAM4_JE</ARBGB>
+     <MSGNR>031</MSGNR>
+     <TEXT>Journal entry could not be cleared</TEXT>
+    </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>ZFI_TEAM4_JE</ARBGB>
+     <MSGNR>032</MSGNR>
+     <TEXT>Journal Entry header could not be derived</TEXT>
+    </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>ZFI_TEAM4_JE</ARBGB>
+     <MSGNR>033</MSGNR>
+     <TEXT>Old Journal line items could not be removed</TEXT>
+    </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>ZFI_TEAM4_JE</ARBGB>
+     <MSGNR>034</MSGNR>
+     <TEXT>Due Date is invalid</TEXT>
+    </T100>
+    <T100>
+     <SPRSL>E</SPRSL>
+     <ARBGB>ZFI_TEAM4_JE</ARBGB>
+     <MSGNR>035</MSGNR>
+     <TEXT>Fiscal Year is invalid</TEXT>
+    </T100>
+   </T100>
+  </asx:values>
+ </asx:abap>
+</abapGit>

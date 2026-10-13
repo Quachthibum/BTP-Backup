@@ -1,0 +1,113 @@
+@Metadata.layer: #CUSTOMER
+
+@UI.headerInfo: {
+  typeName: 'Journal Entry Item',
+  typeNamePlural: 'Journal Entry Items'
+}
+
+annotate entity ZC_TEAM4_JEI with
+{
+  @UI.hidden: true
+  JournalEntryUUID;
+
+
+  @EndUserText.label: 'Item'
+  @UI.lineItem: [{
+    position: 10,
+    importance: #HIGH
+  }]
+  ItemNo;
+
+
+  @EndUserText.label: 'G/L Account'
+  @UI.lineItem: [{
+    position: 20,
+    importance: #HIGH
+  }]
+  @UI.fieldGroup: [{
+    qualifier: 'ItemDetails',
+    position: 10
+  }]
+  GLAccount;
+
+
+  @EndUserText.label: 'G/L Account Name'
+  @UI.lineItem: [{
+    position: 30,
+    importance: #MEDIUM
+  }]
+  GLAccountName;
+
+
+  @EndUserText.label: 'Debit/Credit'
+  @UI.lineItem: [{
+    position: 40,
+    importance: #HIGH
+  }]
+  @UI.fieldGroup: [{
+    qualifier: 'ItemDetails',
+    position: 20
+  }]
+  DebitCredit;
+
+
+  @EndUserText.label: 'Amount'
+  @UI.lineItem: [{
+    position: 50,
+    importance: #HIGH
+  }]
+  @UI.fieldGroup: [{
+    qualifier: 'ItemDetails',
+    position: 30
+  }]
+  Amount;
+
+
+  @EndUserText.label: 'Currency'
+  @UI.lineItem: [{
+    position: 60,
+    importance: #MEDIUM
+  }]
+  @UI.fieldGroup: [{
+    qualifier: 'ItemDetails',
+    position: 40
+  }]
+  TransactionCurrency;
+
+
+  @EndUserText.label: 'Tax Code'
+  @UI.lineItem: [{
+    position: 70,
+    importance: #MEDIUM
+  }]
+  @UI.fieldGroup: [{
+    qualifier: 'ItemDetails',
+    position: 50
+  }]
+  TaxCode;
+
+
+  @EndUserText.label: 'Item Text'
+  @UI.lineItem: [{
+    position: 80,
+    importance: #MEDIUM
+  }]
+  @UI.fieldGroup: [{
+    qualifier: 'ItemDetails',
+    position: 60
+  }]
+  ItemText;
+
+
+  @UI.facet: [
+    {
+      id: 'ItemDetails',
+      purpose: #STANDARD,
+      type: #FIELDGROUP_REFERENCE,
+      targetQualifier: 'ItemDetails',
+      label: 'Journal Entry Item',
+      position: 10
+    }
+  ]
+  _Header;
+}

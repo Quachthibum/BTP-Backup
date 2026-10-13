@@ -1,0 +1,206 @@
+@Metadata.layer: #CORE
+
+@UI.headerInfo: {
+  typeName: 'Journal Entry',
+  typeNamePlural: 'Journal Entries',
+  title: {
+    type: #STANDARD,
+    value: 'DocumentNumber'
+  },
+  description: {
+    type: #STANDARD,
+    value: 'CustomerName'
+  }
+}
+
+@UI.selectionPresentationVariant: [
+  {
+    qualifier: 'SPV_All',
+    text: 'All Documents',
+    selectionVariantQualifier: 'SV_All',
+    presentationVariantQualifier: 'PV_All'
+  },
+  {
+    qualifier: 'SPV_Parked',
+    text: 'Parked',
+    selectionVariantQualifier: 'SV_Parked',
+    presentationVariantQualifier: 'PV_Parked'
+  },
+  {
+    qualifier: 'SPV_Open',
+    text: 'Posted / Open',
+    selectionVariantQualifier: 'SV_Open',
+    presentationVariantQualifier: 'PV_Open'
+  },
+  {
+    qualifier: 'SPV_Cleared',
+    text: 'Cleared',
+    selectionVariantQualifier: 'SV_Cleared',
+    presentationVariantQualifier: 'PV_Cleared'
+  }
+]
+
+@UI.selectionVariant: [
+  { qualifier: 'SV_All',     text: 'All Documents' },
+  { qualifier: 'SV_Parked',  text: 'Parked',        filter: 'Status EQ ''P''' },
+  { qualifier: 'SV_Open',    text: 'Posted / Open',  filter: 'Status EQ ''O''' },
+  { qualifier: 'SV_Cleared', text: 'Cleared',        filter: 'Status EQ ''C''' }
+]
+
+@UI.presentationVariant: [
+  { qualifier: 'PV_All',     visualizations: [{ type: #AS_LINEITEM }] },
+  { qualifier: 'PV_Parked',  visualizations: [{ type: #AS_LINEITEM }] },
+  { qualifier: 'PV_Open',    visualizations: [{ type: #AS_LINEITEM }] },
+  { qualifier: 'PV_Cleared', visualizations: [{ type: #AS_LINEITEM }] }
+]
+
+annotate entity ZC_TEAM4_JEH with
+{
+  @UI.hidden: true
+  JournalEntryUUID;
+
+  @EndUserText.label: 'Company Code'
+  @UI.selectionField: [{ position: 10 }]
+  @UI.fieldGroup: [{ qualifier: 'General', position: 10 }]
+  CompanyCode;
+
+  @EndUserText.label: 'Document Number'
+  @UI.selectionField: [{ position: 50 }]
+  @UI.lineItem: [
+    { position: 10, importance: #HIGH },
+    { type: #FOR_ACTION, dataAction: 'Post', label: 'Post Document', position: 110 },
+    { type: #FOR_ACTION, dataAction: 'Clear', label: 'Clear Document', position: 120 }
+  ]
+  @UI.identification: [
+    { position: 10 },
+    { type: #FOR_ACTION, dataAction: 'Post', label: 'Post Document', position: 110 },
+    { type: #FOR_ACTION, dataAction: 'Clear', label: 'Clear Document', position: 120 }
+  ]
+  @UI.fieldGroup: [{ qualifier: 'General', position: 20 }]
+  DocumentNumber;
+
+  @EndUserText.label: 'Fiscal Year'
+  @UI.selectionField: [{ position: 20 }]
+  @UI.fieldGroup: [{ qualifier: 'General', position: 30 }]
+  FiscalYear;
+
+  @EndUserText.label: 'Document Type'
+  @UI.lineItem: [{ position: 30, importance: #HIGH }]
+  @UI.fieldGroup: [{ qualifier: 'General', position: 40 }]
+  DocumentType;
+
+  @EndUserText.label: 'Document Date'
+  @UI.fieldGroup: [{ qualifier: 'General', position: 50 }]
+  DocumentDate;
+
+  @EndUserText.label: 'Posting Date'
+  @UI.lineItem: [{ position: 50, importance: #HIGH }]
+  @UI.fieldGroup: [{ qualifier: 'General', position: 60 }]
+  PostingDate;
+
+  @EndUserText.label: 'Currency'
+  @UI.lineItem: [{ position: 90, importance: #MEDIUM }]
+  @UI.fieldGroup: [{ qualifier: 'Amounts', position: 50 }]
+  TransactionCurrency;
+
+  @EndUserText.label: 'Reference'
+  @UI.fieldGroup: [{ qualifier: 'General', position: 70 }]
+  @Consumption.valueHelpDefinition: [{
+    entity: { name: 'ZI_TEAM4_SALESORDER_VH', element: 'SalesOrder' },
+    additionalBinding: [
+      { localElement: 'Customer',    element: 'Customer',    usage: #FILTER },
+      { localElement: 'NetAmount',   element: 'NetAmount',   usage: #RESULT },
+      { localElement: 'CompanyCode', element: 'CompanyCode', usage: #RESULT }
+    ]
+  }]
+  Reference;
+
+  @EndUserText.label: 'Customer'
+  @UI.selectionField: [{ position: 40 }]
+  @UI.lineItem: [{ position: 40, importance: #HIGH }]
+  @UI.fieldGroup: [{ qualifier: 'General', position: 80 }]
+  @Consumption.valueHelpDefinition: [{
+    entity: { name: 'ZI_TEAM4_CUSTOMER_VH', element: 'Customer' },
+    additionalBinding: [
+      { localElement: 'CustomerName', element: 'CustomerName', usage: #RESULT }
+    ]
+  }]
+  Customer;
+
+  @EndUserText.label: 'Customer Name'
+  @UI.lineItem: [{ position: 45, importance: #MEDIUM }]
+  @UI.identification: [{ position: 20 }]
+  @UI.fieldGroup: [{ qualifier: 'General', position: 90 }]
+  CustomerName;
+
+  @EndUserText.label: 'Net Amount'
+  @UI.fieldGroup: [{ qualifier: 'Amounts', position: 10 }]
+  NetAmount;
+
+  @EndUserText.label: 'Tax Rate (%)'
+  @UI.fieldGroup: [{ qualifier: 'Amounts', position: 20 }]
+  TaxRate;
+
+  @EndUserText.label: 'Tax Amount'
+  @UI.fieldGroup: [{ qualifier: 'Amounts', position: 30 }]
+  TaxAmount;
+
+  @EndUserText.label: 'Gross Amount'
+  @UI.lineItem: [{ position: 80, importance: #HIGH }]
+  @UI.identification: [{ position: 30 }]
+  @UI.fieldGroup: [{ qualifier: 'Amounts', position: 40 }]
+  GrossAmount;
+
+  @EndUserText.label: 'Due Date'
+  @UI.lineItem: [{ position: 60, importance: #HIGH }]
+  @UI.fieldGroup: [{ qualifier: 'General', position: 100 }]
+  DueDate;
+
+  @EndUserText.label: 'Status'
+  @UI.selectionField: [{ position: 30 }]
+  @UI.lineItem: [{ position: 20, importance: #HIGH, criticality: 'StatusCriticality' }]
+  @UI.identification: [{ position: 5, criticality: 'StatusCriticality' }]
+  StatusText;
+
+  @UI.hidden: true
+  Status;
+
+  @UI.hidden: true
+  StatusCriticality;
+
+  @EndUserText.label: 'Clearing Document'
+  @UI.fieldGroup: [{ qualifier: 'Clearing', position: 10 }]
+  ClearingDocument;
+
+  @EndUserText.label: 'Clearing Date'
+  @UI.fieldGroup: [{ qualifier: 'Clearing', position: 20 }]
+  ClearingDate;
+
+  @EndUserText.label: 'Created By'
+  @UI.fieldGroup: [{ qualifier: 'Audit', position: 10 }]
+  CreatedBy;
+
+  @EndUserText.label: 'Created At'
+  @UI.fieldGroup: [{ qualifier: 'Audit', position: 20 }]
+  CreatedAt;
+
+  @EndUserText.label: 'Last Changed By'
+  @UI.fieldGroup: [{ qualifier: 'Audit', position: 30 }]
+  LastChangedBy;
+
+  @EndUserText.label: 'Last Changed At'
+  @UI.fieldGroup: [{ qualifier: 'Audit', position: 40 }]
+  LastChangedAt;
+
+  @UI.hidden: true
+  LocalLastChangedAt;
+
+  @UI.facet: [
+    { id: 'GeneralInformation', purpose: #STANDARD, type: #FIELDGROUP_REFERENCE, targetQualifier: 'General', label: 'General Information', position: 10 },
+    { id: 'AmountsAndTax',      purpose: #STANDARD, type: #FIELDGROUP_REFERENCE, targetQualifier: 'Amounts', label: 'Amounts and Tax',      position: 20 },
+    { id: 'JournalLineItems',   purpose: #STANDARD, type: #LINEITEM_REFERENCE,   targetElement: '_Items',    label: 'Journal Line Items',   position: 30 },
+    { id: 'ClearingInformation',purpose: #STANDARD, type: #FIELDGROUP_REFERENCE, targetQualifier: 'Clearing',label: 'Clearing Information', position: 40 },
+    { id: 'AdministrativeData', purpose: #STANDARD, type: #FIELDGROUP_REFERENCE, targetQualifier: 'Audit',   label: 'Administrative Data',  position: 50 }
+  ]
+  _Items;
+}

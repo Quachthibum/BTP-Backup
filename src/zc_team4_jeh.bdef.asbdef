@@ -1,0 +1,40 @@
+projection;
+strict ( 2 );
+use draft;
+use side effects;
+
+define behavior for ZC_TEAM4_JEH alias Header
+use etag
+{
+  use create;
+  use update;
+  use delete;
+
+  use action GeneratePostings;
+  use action Post;
+  use action Clear;
+
+  use association _Items
+  {
+    create;
+    with draft;
+  }
+
+  use action Edit;
+  use action Activate;
+  use action Discard;
+  use action Resume;
+  use action Prepare;
+}
+
+define behavior for ZC_TEAM4_JEI alias Item
+use etag
+{
+  use update;
+  use delete;
+
+  use association _Header
+  {
+    with draft;
+  }
+}

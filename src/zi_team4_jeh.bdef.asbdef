@@ -1,0 +1,217 @@
+managed implementation in class zbp_i_team4_jeh unique;
+strict ( 2 );
+with draft;
+
+define behavior for ZI_TEAM4_JEH alias Header
+persistent table zteam4_jeh
+draft table zteam4_jeh_d
+lock master
+total etag LocalLastChangedAt
+authorization master ( instance )
+etag master LocalLastChangedAt
+{
+  create;
+  update ( features : instance );
+  delete ( features : instance );
+
+  field ( readonly, numbering : managed )
+  JournalEntryUUID;
+
+  field ( readonly )
+  DocumentNumber,
+  CustomerName,
+  TaxAmount,
+  GrossAmount,
+  Status,
+  StatusCriticality,
+  StatusText,
+  ClearingDocument,
+  ClearingDate,
+  CreatedBy,
+  CreatedAt,
+  LastChangedBy,
+  LastChangedAt,
+  LocalLastChangedAt;
+
+  // Dynamic field control: lock after Reference selection
+  field ( features : instance )
+  NetAmount,
+  TaxRate;
+
+  field ( mandatory )
+  CompanyCode,
+  FiscalYear,
+  DocumentType,
+  DocumentDate,
+  PostingDate,
+  TransactionCurrency,
+  DueDate,
+  Customer;
+
+  association _Items
+  {
+    create ( features : instance );
+    with draft;
+  }
+
+  determination setInitialValues on modify { create; }
+  determination deriveCustomerName on modify { field Customer; }
+  determination calculateAmounts on modify { field NetAmount, TaxRate; }
+  determination deriveFromSalesOrder on modify { field Reference; }
+
+  side effects
+  {
+    field Reference affects $self, entity _Items, messages;
+    field Customer affects field CustomerName, messages;
+    field NetAmount affects field TaxAmount, field GrossAmount, messages;
+    field TaxRate affects field TaxAmount, field GrossAmount, messages;
+  }
+
+  validation emptyOnSave on save {
+    create;
+    update;
+    field CompanyCode,
+    FiscalYear,
+    DocumentType,
+    DocumentDate,
+    PostingDate,
+    DueDate,
+    TransactionCurrency,
+    Customer,
+    NetAmount,
+    TaxRate;
+  }
+
+  validation checkReferenceExists on save {
+    create;
+	update;
+	field Customer,
+	      Reference,
+	      TransactionCurrency;
+  }
+
+  validation ownerIsUser on save {
+    create;
+    update;
+  }
+
+  validation validateHeader on save
+  {
+    create;
+    update;
+    field  FiscalYear, PostingDate,
+    NetAmount, TaxRate, DueDate, Status;
+  }
+
+
+  validation validateBalance on save { create; update; }
+
+  action ( features : instance ) GeneratePostings result [1] $self;
+  action ( features : instance ) Post result [1] $self;
+  action ( features : instance ) Clear result [1] $self;
+
+  // Lock Edit button when not parked / already cleared
+  draft action ( features : instance ) Edit;
+  draft action Activate optimized;
+  draft action Discard;
+  draft action Resume;
+
+  draft determine action Prepare
+  {
+    validation validateHeader;
+    validation Item~validateItem;
+    validation Item~validateDocumentBalance;
+    validation validateBalance;
+    validation checkReferenceExists;
+    validation emptyOnSave;
+    validation ownerIsUser;
+  }
+
+  mapping for zteam4_jeh
+    {
+      JournalEntryUUID    = journal_entry_uuid;
+      CompanyCode         = company_code;
+      DocumentNumber      = document_number;
+      FiscalYear          = fiscal_year;
+      DocumentType        = document_type;
+      DocumentDate        = document_date;
+      PostingDate         = posting_date;
+      TransactionCurrency = transaction_currency;
+      Reference           = reference;
+      Customer            = customer;
+      CustomerName        = customer_name;
+      NetAmount           = net_amount;
+      TaxRate             = tax_rate;
+      TaxAmount           = tax_amount;
+      GrossAmount         = gross_amount;
+      DueDate             = due_date;
+      Status              = status;
+      StatusCriticality   = status_criticality;
+      StatusText          = status_text;
+      ClearingDocument    = clearing_document;
+      ClearingDate        = clearing_date;
+      CreatedBy           = created_by;
+      CreatedAt           = created_at;
+      LastChangedBy       = last_changed_by;
+      LastChangedAt       = last_changed_at;
+      LocalLastChangedAt  = local_last_changed_at;
+    }
+}
+
+define behavior for ZI_TEAM4_JEI alias Item
+persistent table zteam4_jei
+draft table zteam4_jei_d
+lock dependent by _Header
+authorization dependent by _Header
+early numbering
+{
+  // Enable instance feature control on line items
+  update ( features : instance );
+  delete ( features : instance );
+
+  field ( readonly )
+      JournalEntryUUID,
+      ItemNo,
+      GLAccountName;
+
+  field ( mandatory )
+      GLAccount,
+      DebitCredit,
+      TransactionCurrency,
+      Amount;
+
+  association _Header { with draft; }
+
+  validation validateItem on save
+	{
+    create;
+    update;
+
+    field  GLAccount,
+           DebitCredit,
+           TransactionCurrency,
+           Amount;
+    }
+
+  validation validateDocumentBalance on save
+    {
+    create;
+    update;
+
+    field DebitCredit,
+          Amount;
+    }
+
+  mapping for zteam4_jei
+    {
+      JournalEntryUUID    = journal_entry_uuid;
+      ItemNo              = item_no;
+      GLAccount           = gl_account;
+      GLAccountName       = gl_account_name;
+      DebitCredit         = debit_credit;
+      TransactionCurrency = transaction_currency;
+      Amount              = amount;
+      TaxCode             = tax_code;
+      ItemText            = item_text;
+    }
+}

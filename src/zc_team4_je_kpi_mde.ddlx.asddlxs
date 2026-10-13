@@ -1,0 +1,42 @@
+@Metadata.layer: #CORE
+
+@UI.headerInfo: {
+  typeName: 'KPI',
+  typeNamePlural: 'KPIs'
+}
+
+annotate entity ZC_TEAM4_JE_KPI with
+{
+  @UI.hidden: true
+  KpiKey;
+
+  @EndUserText.label: 'Parked Documents'
+  @UI.dataPoint: {
+    title: 'Parked Documents',
+    valueFormat.numberOfFractionalDigits: 0,
+    criticalityCalculation: {
+      improvementDirection: #MINIMIZE
+    }
+  }
+  @UI.lineItem: [{ position: 10 }]
+  ParkedCount;
+
+  @EndUserText.label: 'Overdue Receivables'
+  @UI.dataPoint: {
+    title: 'Overdue Receivables',
+    valueFormat.numberOfFractionalDigits: 2
+  }
+  @UI.lineItem: [{ position: 20 }]
+  OverdueAmount;
+
+  @EndUserText.label: 'Total Open Invoices'
+  @UI.dataPoint: {
+    title: 'Total Open Invoices',
+    valueFormat.numberOfFractionalDigits: 2
+  }
+  @UI.lineItem: [{ position: 30 }]
+  OpenAmount;
+
+  @UI.hidden: true
+  Currency;
+}
