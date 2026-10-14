@@ -6,54 +6,57 @@ define root view entity ZI_TEAM4_JEH
   composition [0..*] of ZI_TEAM4_JEI as _Items
 
 {
-  key journal_entry_uuid       as JournalEntryUUID,
-      company_code             as CompanyCode,
-      document_number          as DocumentNumber,
-      fiscal_year              as FiscalYear,
-      document_type            as DocumentType,
-      document_date            as DocumentDate,
-      posting_date             as PostingDate,
-      transaction_currency     as TransactionCurrency,
-      reference                as Reference,
-      customer                 as Customer,
-      customer_name            as CustomerName,
+  key journal_entry_uuid    as JournalEntryUUID,
+      company_code          as CompanyCode,
+      document_number       as DocumentNumber,
+      fiscal_year           as FiscalYear,
+      document_type         as DocumentType,
+      document_date         as DocumentDate,
+      posting_date          as PostingDate,
+      transaction_currency  as TransactionCurrency,
+      reference             as Reference,
+      customer              as Customer,
+      customer_name         as CustomerName,
 
       @Semantics.amount.currencyCode: 'TransactionCurrency'
-      net_amount               as NetAmount,
+      net_amount            as NetAmount,
 
-      tax_rate                 as TaxRate,
-
-      @Semantics.amount.currencyCode: 'TransactionCurrency'
-      tax_amount                as TaxAmount,
+      tax_rate              as TaxRate,
 
       @Semantics.amount.currencyCode: 'TransactionCurrency'
-      gross_amount              as GrossAmount,
+      tax_amount            as TaxAmount,
 
-      due_date                  as DueDate,
-      
-      status                    as Status,
-      
-      status_criticality        as StatusCriticality,
-      
-      status_text               as StatusText,
-      
-      clearing_document         as ClearingDocument,
-      clearing_date             as ClearingDate,
+      @Semantics.amount.currencyCode: 'TransactionCurrency'
+      gross_amount          as GrossAmount,
+
+      due_date              as DueDate,
+      payment_bank_id       as PaymentBankId,
+      payment_bank_gl       as PaymentBankGL,
+      payment_reference     as PaymentReference,
+
+      status                as Status,
+
+      status_criticality    as StatusCriticality,
+
+      status_text           as StatusText,
+
+      clearing_document     as ClearingDocument,
+      clearing_date         as ClearingDate,
 
       @Semantics.user.createdBy: true
-      created_by as CreatedBy,
-    
+      created_by            as CreatedBy,
+
       @Semantics.systemDateTime.createdAt: true
-      created_at as CreatedAt,
-    
+      created_at            as CreatedAt,
+
       @Semantics.user.lastChangedBy: true
-      last_changed_by as LastChangedBy,
-    
+      last_changed_by       as LastChangedBy,
+
       @Semantics.systemDateTime.lastChangedAt: true
-      last_changed_at as LastChangedAt,
-    
+      last_changed_at       as LastChangedAt,
+
       @Semantics.systemDateTime.localInstanceLastChangedAt: true
       local_last_changed_at as LocalLastChangedAt,
-       
+
       _Items
 }

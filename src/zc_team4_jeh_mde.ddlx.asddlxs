@@ -175,6 +175,17 @@ annotate entity ZC_TEAM4_JEH with
   @EndUserText.label: 'Clearing Date'
   @UI.fieldGroup: [{ qualifier: 'Clearing', position: 20 }]
   ClearingDate;
+  @EndUserText.label: 'Customer Bank'
+  @UI.fieldGroup: [{ qualifier: 'Clearing', position: 30 }]
+  PaymentBankId;
+
+  @EndUserText.label: 'Bank G/L Account'
+  @UI.fieldGroup: [{ qualifier: 'Clearing', position: 40 }]
+  PaymentBankGL;
+
+  @EndUserText.label: 'Payment Reference'
+  @UI.fieldGroup: [{ qualifier: 'Clearing', position: 50 }]
+  PaymentReference;
 
   @EndUserText.label: 'Created By'
   @UI.fieldGroup: [{ qualifier: 'Audit', position: 10 }]

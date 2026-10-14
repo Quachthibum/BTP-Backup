@@ -27,6 +27,9 @@ etag master LocalLastChangedAt
   StatusText,
   ClearingDocument,
   ClearingDate,
+  PaymentBankId,
+  PaymentBankGL,
+  PaymentReference,
   CreatedBy,
   CreatedAt,
   LastChangedBy,
@@ -108,7 +111,7 @@ etag master LocalLastChangedAt
 
   action ( features : instance ) GeneratePostings result [1] $self;
   action ( features : instance ) Post result [1] $self;
-  action ( features : instance ) Clear result [1] $self;
+  action ( features : instance ) Clear parameter ZA_TEAM4_CLEAR_PARAM result [1] $self;
 
   // Lock Edit button when not parked / already cleared
   draft action ( features : instance ) Edit;
@@ -145,6 +148,9 @@ etag master LocalLastChangedAt
       TaxAmount           = tax_amount;
       GrossAmount         = gross_amount;
       DueDate             = due_date;
+      PaymentBankId     = payment_bank_id;
+      PaymentBankGL     = payment_bank_gl;
+      PaymentReference  = payment_reference;
       Status              = status;
       StatusCriticality   = status_criticality;
       StatusText          = status_text;

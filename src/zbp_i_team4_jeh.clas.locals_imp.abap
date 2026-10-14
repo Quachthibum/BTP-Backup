@@ -25,7 +25,7 @@ CLASS lhc_Header DEFINITION
       gc_tax_code        TYPE zteam4_jei-tax_code VALUE 'A1',
 
       "Mock technical users used to simulate workflow roles.
-      gc_user_chief      TYPE string VALUE 'CB9980000333',
+      gc_user_chief      TYPE string VALUE 'CB9980001379',
       gc_user_accountant TYPE string VALUE 'CB9980001379'.
 
     "----------------------------------------------------------
@@ -97,273 +97,273 @@ CLASS lhc_Header IMPLEMENTATION.
 
   METHOD get_instance_authorizations.
 
-  DATA(lv_user) =
-    to_upper(
-      cl_abap_context_info=>get_user_technical_name( )
+    DATA(lv_user) =
+      to_upper(
+        cl_abap_context_info=>get_user_technical_name( )
+      ).
+
+    READ ENTITIES OF zi_team4_jeh IN LOCAL MODE
+      ENTITY Header
+        FIELDS ( Status )
+        WITH CORRESPONDING #( keys )
+      RESULT DATA(headers).
+
+    result = VALUE #(
+      FOR header IN headers
+
+      LET is_chief =
+            xsdbool(
+              lv_user = gc_user_chief
+            )
+
+          is_accountant =
+            xsdbool(
+              lv_user = gc_user_accountant
+            )
+
+          is_known_user =
+            xsdbool(
+              is_chief = abap_true
+              OR is_accountant = abap_true
+            )
+
+          is_parked =
+            xsdbool(
+              header-Status = gc_status_parked
+            )
+
+          is_open =
+            xsdbool(
+              header-Status = gc_status_open
+            )
+
+          is_cleared =
+            xsdbool(
+              header-Status = gc_status_cleared
+            )
+
+      IN
+      (
+        %tky = header-%tky
+
+        " Both roles may update Parked/Posted documents.
+        %update = COND #(
+          WHEN is_known_user = abap_true
+           AND is_cleared = abap_false
+            THEN if_abap_behv=>auth-allowed
+          ELSE
+            if_abap_behv=>auth-unauthorized
+        )
+
+        " Authorization permits delete for configured users.
+        " Parked-only delete is controlled by instance features.
+        %delete = COND #(
+          WHEN is_known_user = abap_true
+            THEN if_abap_behv=>auth-allowed
+          ELSE
+            if_abap_behv=>auth-unauthorized
+        )
+
+        %action-Edit = COND #(
+          WHEN is_known_user = abap_true
+           AND is_cleared = abap_false
+            THEN if_abap_behv=>auth-allowed
+          ELSE
+            if_abap_behv=>auth-unauthorized
+        )
+
+        %action-GeneratePostings = COND #(
+          WHEN is_known_user = abap_true
+           AND is_parked = abap_true
+            THEN if_abap_behv=>auth-allowed
+          ELSE
+            if_abap_behv=>auth-unauthorized
+        )
+
+        " Chief Accountant only.
+        %action-Post = COND #(
+          WHEN is_chief = abap_true
+           AND is_parked = abap_true
+            THEN if_abap_behv=>auth-allowed
+          ELSE
+            if_abap_behv=>auth-unauthorized
+        )
+
+        " Chief Accountant only.
+        %action-Clear = COND #(
+          WHEN is_chief = abap_true
+           AND is_open = abap_true
+            THEN if_abap_behv=>auth-allowed
+          ELSE
+            if_abap_behv=>auth-unauthorized
+        )
+      )
     ).
 
-  READ ENTITIES OF zi_team4_jeh IN LOCAL MODE
-    ENTITY Header
-      FIELDS ( Status )
-      WITH CORRESPONDING #( keys )
-    RESULT DATA(headers).
-
-  result = VALUE #(
-    FOR header IN headers
-
-    LET is_chief =
-          xsdbool(
-            lv_user = gc_user_chief
-          )
-
-        is_accountant =
-          xsdbool(
-            lv_user = gc_user_accountant
-          )
-
-        is_known_user =
-          xsdbool(
-            is_chief = abap_true
-            OR is_accountant = abap_true
-          )
-
-        is_parked =
-          xsdbool(
-            header-Status = gc_status_parked
-          )
-
-        is_open =
-          xsdbool(
-            header-Status = gc_status_open
-          )
-
-        is_cleared =
-          xsdbool(
-            header-Status = gc_status_cleared
-          )
-
-    IN
-    (
-      %tky = header-%tky
-
-      " Both roles may update Parked/Posted documents.
-      %update = COND #(
-        WHEN is_known_user = abap_true
-         AND is_cleared = abap_false
-          THEN if_abap_behv=>auth-allowed
-        ELSE
-          if_abap_behv=>auth-unauthorized
-      )
-
-      " Authorization permits delete for configured users.
-      " Parked-only delete is controlled by instance features.
-      %delete = COND #(
-        WHEN is_known_user = abap_true
-          THEN if_abap_behv=>auth-allowed
-        ELSE
-          if_abap_behv=>auth-unauthorized
-      )
-
-      %action-Edit = COND #(
-        WHEN is_known_user = abap_true
-         AND is_cleared = abap_false
-          THEN if_abap_behv=>auth-allowed
-        ELSE
-          if_abap_behv=>auth-unauthorized
-      )
-
-      %action-GeneratePostings = COND #(
-        WHEN is_known_user = abap_true
-         AND is_parked = abap_true
-          THEN if_abap_behv=>auth-allowed
-        ELSE
-          if_abap_behv=>auth-unauthorized
-      )
-
-      " Chief Accountant only.
-      %action-Post = COND #(
-        WHEN is_chief = abap_true
-         AND is_parked = abap_true
-          THEN if_abap_behv=>auth-allowed
-        ELSE
-          if_abap_behv=>auth-unauthorized
-      )
-
-      " Chief Accountant only.
-      %action-Clear = COND #(
-        WHEN is_chief = abap_true
-         AND is_open = abap_true
-          THEN if_abap_behv=>auth-allowed
-        ELSE
-          if_abap_behv=>auth-unauthorized
-      )
-    )
-  ).
-
-ENDMETHOD.
+  ENDMETHOD.
 
   METHOD get_instance_features.
 
-  DATA(lv_user) =
-    to_upper(
-      cl_abap_context_info=>get_user_technical_name( )
-    ).
+    DATA(lv_user) =
+      to_upper(
+        cl_abap_context_info=>get_user_technical_name( )
+      ).
 
-  DATA(is_chief_user) =
-    xsdbool(
-      lv_user = gc_user_chief
-    ).
+    DATA(is_chief_user) =
+      xsdbool(
+        lv_user = gc_user_chief
+      ).
 
-  DATA(is_accountant_user) =
-    xsdbool(
-      lv_user = gc_user_accountant
-    ).
+    DATA(is_accountant_user) =
+      xsdbool(
+        lv_user = gc_user_accountant
+      ).
 
-  DATA(is_known_user) =
-    xsdbool(
-      is_chief_user = abap_true
-      OR is_accountant_user = abap_true
-    ).
+    DATA(is_known_user) =
+      xsdbool(
+        is_chief_user = abap_true
+        OR is_accountant_user = abap_true
+      ).
 
-  READ ENTITIES OF zi_team4_jeh IN LOCAL MODE
-    ENTITY Header
-      FIELDS (
-        Status
-        Reference
-      )
-      WITH CORRESPONDING #( keys )
-    RESULT DATA(headers).
+    READ ENTITIES OF zi_team4_jeh IN LOCAL MODE
+      ENTITY Header
+        FIELDS (
+          Status
+          Reference
+        )
+        WITH CORRESPONDING #( keys )
+      RESULT DATA(headers).
 
-  READ ENTITIES OF zi_team4_jeh IN LOCAL MODE
-    ENTITY Header BY \_Items
-      FIELDS (
-        JournalEntryUUID
-      )
-      WITH CORRESPONDING #( keys )
-    RESULT DATA(items).
+    READ ENTITIES OF zi_team4_jeh IN LOCAL MODE
+      ENTITY Header BY \_Items
+        FIELDS (
+          JournalEntryUUID
+        )
+        WITH CORRESPONDING #( keys )
+      RESULT DATA(items).
 
-  result = VALUE #(
-    FOR header IN headers
+    result = VALUE #(
+      FOR header IN headers
 
-    LET has_items =
-          xsdbool(
-            line_exists(
-              items[
-                JournalEntryUUID = header-JournalEntryUUID
-              ]
+      LET has_items =
+            xsdbool(
+              line_exists(
+                items[
+                  JournalEntryUUID = header-JournalEntryUUID
+                ]
+              )
             )
-          )
 
-        is_ref_selected =
-          xsdbool(
-            header-Reference IS NOT INITIAL
-          )
+          is_ref_selected =
+            xsdbool(
+              header-Reference IS NOT INITIAL
+            )
 
-        is_cleared =
-          xsdbool(
-            header-Status = gc_status_cleared
-          )
+          is_cleared =
+            xsdbool(
+              header-Status = gc_status_cleared
+            )
 
-        is_open =
-          xsdbool(
-            header-Status = gc_status_open
-          )
+          is_open =
+            xsdbool(
+              header-Status = gc_status_open
+            )
 
-        is_parked =
-          xsdbool(
-            header-Status = gc_status_parked
-          )
+          is_parked =
+            xsdbool(
+              header-Status = gc_status_parked
+            )
 
-        can_edit =
-          xsdbool(
-            is_known_user = abap_true
-            AND is_cleared = abap_false
-          )
+          can_edit =
+            xsdbool(
+              is_known_user = abap_true
+              AND is_cleared = abap_false
+            )
 
-    IN
-    (
-      %tky = header-%tky
+      IN
+      (
+        %tky = header-%tky
 
-      %action-Edit = COND #(
-        WHEN can_edit = abap_true
-          THEN if_abap_behv=>fc-o-enabled
-        ELSE
-          if_abap_behv=>fc-o-disabled
+        %action-Edit = COND #(
+          WHEN can_edit = abap_true
+            THEN if_abap_behv=>fc-o-enabled
+          ELSE
+            if_abap_behv=>fc-o-disabled
+        )
+
+        %update = COND #(
+          WHEN can_edit = abap_true
+            THEN if_abap_behv=>fc-o-enabled
+          ELSE
+            if_abap_behv=>fc-o-disabled
+        )
+
+        %delete = COND #(
+          WHEN is_known_user = abap_true
+           AND is_parked = abap_true
+            THEN if_abap_behv=>fc-o-enabled
+          ELSE
+            if_abap_behv=>fc-o-disabled
+        )
+
+        %field-NetAmount = COND #(
+          WHEN is_ref_selected = abap_true
+            OR is_cleared = abap_true
+            THEN if_abap_behv=>fc-f-read_only
+          ELSE
+            if_abap_behv=>fc-f-unrestricted
+        )
+
+        %field-TaxRate = COND #(
+          WHEN is_ref_selected = abap_true
+            OR is_cleared = abap_true
+            THEN if_abap_behv=>fc-f-read_only
+          ELSE
+            if_abap_behv=>fc-f-unrestricted
+        )
+
+        " Manual Item creation is allowed only for manual Parked JEs.
+        %assoc-_Items = COND #(
+          WHEN is_known_user = abap_true
+           AND is_parked = abap_true
+           AND is_ref_selected = abap_false
+            THEN if_abap_behv=>fc-o-enabled
+          ELSE
+            if_abap_behv=>fc-o-disabled
+        )
+
+        %action-GeneratePostings = COND #(
+          WHEN is_known_user = abap_true
+           AND is_parked = abap_true
+           AND has_items = abap_false
+           AND is_ref_selected = abap_false
+            THEN if_abap_behv=>fc-o-enabled
+          ELSE
+            if_abap_behv=>fc-o-disabled
+        )
+
+        " Chief Accountant only.
+        %action-Post = COND #(
+          WHEN is_chief_user = abap_true
+           AND is_parked = abap_true
+           AND has_items = abap_true
+            THEN if_abap_behv=>fc-o-enabled
+          ELSE
+            if_abap_behv=>fc-o-disabled
+        )
+
+        " Chief Accountant only.
+        %action-Clear = COND #(
+          WHEN is_chief_user = abap_true
+           AND is_open = abap_true
+            THEN if_abap_behv=>fc-o-enabled
+          ELSE
+            if_abap_behv=>fc-o-disabled
+        )
       )
+    ).
 
-      %update = COND #(
-        WHEN can_edit = abap_true
-          THEN if_abap_behv=>fc-o-enabled
-        ELSE
-          if_abap_behv=>fc-o-disabled
-      )
-
-      %delete = COND #(
-        WHEN is_known_user = abap_true
-         AND is_parked = abap_true
-          THEN if_abap_behv=>fc-o-enabled
-        ELSE
-          if_abap_behv=>fc-o-disabled
-      )
-
-      %field-NetAmount = COND #(
-        WHEN is_ref_selected = abap_true
-          OR is_cleared = abap_true
-          THEN if_abap_behv=>fc-f-read_only
-        ELSE
-          if_abap_behv=>fc-f-unrestricted
-      )
-
-      %field-TaxRate = COND #(
-        WHEN is_ref_selected = abap_true
-          OR is_cleared = abap_true
-          THEN if_abap_behv=>fc-f-read_only
-        ELSE
-          if_abap_behv=>fc-f-unrestricted
-      )
-
-      " Manual Item creation is allowed only for manual Parked JEs.
-      %assoc-_Items = COND #(
-        WHEN is_known_user = abap_true
-         AND is_parked = abap_true
-         AND is_ref_selected = abap_false
-          THEN if_abap_behv=>fc-o-enabled
-        ELSE
-          if_abap_behv=>fc-o-disabled
-      )
-
-      %action-GeneratePostings = COND #(
-        WHEN is_known_user = abap_true
-         AND is_parked = abap_true
-         AND has_items = abap_false
-         AND is_ref_selected = abap_false
-          THEN if_abap_behv=>fc-o-enabled
-        ELSE
-          if_abap_behv=>fc-o-disabled
-      )
-
-      " Chief Accountant only.
-      %action-Post = COND #(
-        WHEN is_chief_user = abap_true
-         AND is_parked = abap_true
-         AND has_items = abap_true
-          THEN if_abap_behv=>fc-o-enabled
-        ELSE
-          if_abap_behv=>fc-o-disabled
-      )
-
-      " Chief Accountant only.
-      %action-Clear = COND #(
-        WHEN is_chief_user = abap_true
-         AND is_open = abap_true
-          THEN if_abap_behv=>fc-o-enabled
-        ELSE
-          if_abap_behv=>fc-o-disabled
-      )
-    )
-  ).
-
-ENDMETHOD.
+  ENDMETHOD.
 
   METHOD Clear.
 
@@ -372,26 +372,25 @@ ENDMETHOD.
             cl_abap_context_info=>get_user_technical_name( )
         ).
 
-    " Only the mock Chief Accountant may post.
+    " Only the mock Chief Accountant may clear.
     IF lv_user <> gc_user_chief.
 
-        LOOP AT keys INTO DATA(unauthorized_key).
+      LOOP AT keys INTO DATA(unauthorized_key).
 
-            APPEND VALUE #(
-            %tky = unauthorized_key-%tky
-            ) TO failed-header.
+        APPEND VALUE #(
+          %tky = unauthorized_key-%tky
+        ) TO failed-header.
 
-            APPEND VALUE #(
-                %tky = unauthorized_key-%tky
-                %msg = new_message_with_text(
-                    severity = if_abap_behv_message=>severity-error
-                    text = |Only the mock Chief Accountant can clear a Journal Entry|
-                )
-            ) TO reported-header.
+        APPEND VALUE #(
+          %tky = unauthorized_key-%tky
+          %msg = new_message_with_text(
+                   severity = if_abap_behv_message=>severity-error
+                   text     = |Only the mock Chief Accountant can clear a Journal Entry| )
+        ) TO reported-header.
 
-        ENDLOOP.
+      ENDLOOP.
 
-        RETURN.
+      RETURN.
 
     ENDIF.
 
@@ -402,6 +401,10 @@ ENDMETHOD.
           DocumentNumber
           ClearingDocument
           ClearingDate
+          Customer
+          PostingDate
+          GrossAmount
+          TransactionCurrency
         )
         WITH CORRESPONDING #( keys )
       RESULT DATA(headers).
@@ -463,6 +466,42 @@ ENDMETHOD.
         CONTINUE.
       ENDIF.
 
+            " ---- popup parameters and checks ----
+      DATA(param) = keys[ KEY entity %tky = header-%tky ]-%param.
+
+      " Blank date in the popup means today
+      DATA(clearing_date) = COND dats(
+        WHEN param-ClearingDate IS INITIAL
+        THEN cl_abap_context_info=>get_system_date( )
+        ELSE param-ClearingDate ).
+
+      SELECT SINGLE gl_account
+        FROM zteam4_custbank
+        WHERE customer = @header-Customer
+          AND bank_id  = @param-BankId
+        INTO @DATA(bank_gl).
+      DATA(bank_found) = xsdbool( sy-subrc = 0 ).
+
+      DATA(error_text) = VALUE string( ).
+
+      IF bank_found = abap_false.
+        error_text = 'Select a bank account that belongs to this customer'.
+      ELSEIF clearing_date < header-PostingDate.
+        error_text = 'Clearing date cannot be before the posting date'.
+      ENDIF.
+
+      IF error_text IS NOT INITIAL.
+        APPEND VALUE #( %tky = header-%tky ) TO failed-header.
+        APPEND VALUE #(
+          %tky = header-%tky
+          %msg = new_message_with_text(
+                   severity = if_abap_behv_message=>severity-error
+                   text     = error_text )
+        ) TO reported-header.
+        CONTINUE.
+      ENDIF.
+      " ---- end of popup block ----
+
       DATA clearing_document TYPE zteam4_jeh-clearing_document.
       clearing_document = |{ next_clearing_number WIDTH = 10 ALIGN = RIGHT PAD = '0' }|.
       next_clearing_number += 1.
@@ -475,15 +514,21 @@ ENDMETHOD.
             Status
             StatusCriticality
             StatusText
+            PaymentBankId
+            PaymentBankGL
+            PaymentReference
           )
           WITH VALUE #(
             (
               %tky              = header-%tky
               ClearingDocument  = clearing_document
-              ClearingDate      = cl_abap_context_info=>get_system_date( )
+              ClearingDate      = clearing_date
               Status            = gc_status_cleared
               StatusCriticality = 3
               StatusText        = 'Cleared'
+              PaymentBankId     = param-BankId
+              PaymentBankGL     = bank_gl
+              PaymentReference  = param-PaymentReference
             )
           )
         FAILED DATA(failed_update)
@@ -718,23 +763,23 @@ ENDMETHOD.
     " Only the mock Chief Accountant may post.
     IF lv_user <> gc_user_chief.
 
-        LOOP AT keys INTO DATA(unauthorized_key).
+      LOOP AT keys INTO DATA(unauthorized_key).
 
-            APPEND VALUE #(
+        APPEND VALUE #(
+        %tky = unauthorized_key-%tky
+        ) TO failed-header.
+
+        APPEND VALUE #(
             %tky = unauthorized_key-%tky
-            ) TO failed-header.
+            %msg = new_message_with_text(
+                severity = if_abap_behv_message=>severity-error
+                text = |Only the mock Chief Accountant can post a Journal Entry|
+            )
+        ) TO reported-header.
 
-            APPEND VALUE #(
-                %tky = unauthorized_key-%tky
-                %msg = new_message_with_text(
-                    severity = if_abap_behv_message=>severity-error
-                    text = |Only the mock Chief Accountant can post a Journal Entry|
-                )
-            ) TO reported-header.
+      ENDLOOP.
 
-        ENDLOOP.
-
-        RETURN.
+      RETURN.
 
     ENDIF.
 
@@ -1611,236 +1656,236 @@ ENDMETHOD.
 
   METHOD checkReferenceExists.
 
-  "==============================================================
-  " VALIDATE CUSTOMER AND SALES ORDER REFERENCE
-  "==============================================================
-  " Responsibilities:
-  "   1. Validate that the selected Customer exists.
-  "   2. Allow an empty Reference for a manual Journal Entry.
-  "   3. Validate that the selected Sales Order exists.
-  "   4. Validate that the Sales Order belongs to the Customer.
-  "   5. Validate the Sales Order currency and Net Amount.
-  "   6. Validate Header Currency against Sales Order Currency.
-  "==============================================================
+    "==============================================================
+    " VALIDATE CUSTOMER AND SALES ORDER REFERENCE
+    "==============================================================
+    " Responsibilities:
+    "   1. Validate that the selected Customer exists.
+    "   2. Allow an empty Reference for a manual Journal Entry.
+    "   3. Validate that the selected Sales Order exists.
+    "   4. Validate that the Sales Order belongs to the Customer.
+    "   5. Validate the Sales Order currency and Net Amount.
+    "   6. Validate Header Currency against Sales Order Currency.
+    "==============================================================
 
-  READ ENTITIES OF zi_team4_jeh IN LOCAL MODE
-    ENTITY Header
-      FIELDS (
-        Customer
-        Reference
-        TransactionCurrency
-      )
-      WITH CORRESPONDING #( keys )
-    RESULT DATA(headers).
-
-  DATA:
-    sales_order       TYPE zteam4_so,
-    existing_customer TYPE zteam4_customer-customer_id.
-
-  LOOP AT headers INTO DATA(header).
-
-    "------------------------------------------------------------
-    " Invalidate old messages returned by this validation.
-    "------------------------------------------------------------
-    APPEND VALUE #(
-      %tky        = header-%tky
-      %state_area = 'CHECK_REFERENCE'
-    ) TO reported-header.
-
-
-    "------------------------------------------------------------
-    " Empty Customer is handled by emptyOnSave.
-    " Do not return the same error from two validations.
-    "------------------------------------------------------------
-    IF header-Customer IS INITIAL.
-      CONTINUE.
-    ENDIF.
-
-
-    "------------------------------------------------------------
-    " Validate that Customer exists in the Customer master table.
-    " This check must happen before checking whether Reference is
-    " empty because Reference is optional for a manual Journal Entry.
-    "------------------------------------------------------------
-    CLEAR existing_customer.
-
-    SELECT SINGLE customer_id
-      FROM zteam4_customer
-      WHERE customer_id = @header-Customer
-      INTO @existing_customer.
-
-    IF sy-subrc <> 0.
-
-      APPEND VALUE #(
-        %tky = header-%tky
-      ) TO failed-header.
-
-      APPEND VALUE #(
-        %tky              = header-%tky
-        %state_area       = 'CHECK_REFERENCE'
-        %element-Customer = if_abap_behv=>mk-on
-        %msg = NEW zcm_team4_jeh(
-          severity = if_abap_behv_message=>severity-error
-          textid   = zcm_team4_jeh=>customer_not_exist
-          attr1    = CONV #( header-Customer )
+    READ ENTITIES OF zi_team4_jeh IN LOCAL MODE
+      ENTITY Header
+        FIELDS (
+          Customer
+          Reference
+          TransactionCurrency
         )
+        WITH CORRESPONDING #( keys )
+      RESULT DATA(headers).
+
+    DATA:
+      sales_order       TYPE zteam4_so,
+      existing_customer TYPE zteam4_customer-customer_id.
+
+    LOOP AT headers INTO DATA(header).
+
+      "------------------------------------------------------------
+      " Invalidate old messages returned by this validation.
+      "------------------------------------------------------------
+      APPEND VALUE #(
+        %tky        = header-%tky
+        %state_area = 'CHECK_REFERENCE'
       ) TO reported-header.
 
-      CONTINUE.
 
-    ENDIF.
-
-
-    "------------------------------------------------------------
-    " Reference is optional for a manual Journal Entry.
-    "
-    " Customer has already been validated at this point.
-    "------------------------------------------------------------
-    IF header-Reference IS INITIAL.
-      CONTINUE.
-    ENDIF.
+      "------------------------------------------------------------
+      " Empty Customer is handled by emptyOnSave.
+      " Do not return the same error from two validations.
+      "------------------------------------------------------------
+      IF header-Customer IS INITIAL.
+        CONTINUE.
+      ENDIF.
 
 
-    "------------------------------------------------------------
-    " Validate Sales Order existence.
-    "------------------------------------------------------------
-    CLEAR sales_order.
+      "------------------------------------------------------------
+      " Validate that Customer exists in the Customer master table.
+      " This check must happen before checking whether Reference is
+      " empty because Reference is optional for a manual Journal Entry.
+      "------------------------------------------------------------
+      CLEAR existing_customer.
 
-    SELECT SINGLE
-      FROM zteam4_so
-      FIELDS
-        sales_order,
-        customer_id,
-        transaction_currency,
-        net_amount
-      WHERE sales_order = @header-Reference
-      INTO CORRESPONDING FIELDS OF @sales_order.
+      SELECT SINGLE customer_id
+        FROM zteam4_customer
+        WHERE customer_id = @header-Customer
+        INTO @existing_customer.
 
-    IF sy-subrc <> 0.
+      IF sy-subrc <> 0.
 
-      APPEND VALUE #(
-        %tky = header-%tky
-      ) TO failed-header.
+        APPEND VALUE #(
+          %tky = header-%tky
+        ) TO failed-header.
 
-      APPEND VALUE #(
-        %tky               = header-%tky
-        %state_area        = 'CHECK_REFERENCE'
-        %element-Reference = if_abap_behv=>mk-on
-        %msg = NEW zcm_team4_jeh(
-          severity = if_abap_behv_message=>severity-error
-          textid   = zcm_team4_jeh=>sales_order_not_exist
-          attr1    = CONV #( header-Reference )
-        )
-      ) TO reported-header.
-
-      CONTINUE.
-
-    ENDIF.
-
-
-    "------------------------------------------------------------
-    " Validate Customer/Sales Order relationship.
-    "------------------------------------------------------------
-    IF sales_order-customer_id <> header-Customer.
-
-      APPEND VALUE #(
-        %tky = header-%tky
-      ) TO failed-header.
-
-      APPEND VALUE #(
-        %tky               = header-%tky
-        %state_area        = 'CHECK_REFERENCE'
-        %element-Reference = if_abap_behv=>mk-on
-        %msg = NEW zcm_team4_jeh(
-          severity = if_abap_behv_message=>severity-error
-          textid   = zcm_team4_jeh=>so_customer_mismatch
-          attr1    = CONV #( header-Reference )
-          attr2    = CONV #( header-Customer )
-        )
-      ) TO reported-header.
-
-    ENDIF.
-
-
-    "------------------------------------------------------------
-    " Validate that Sales Order Currency is available.
-    "------------------------------------------------------------
-    IF sales_order-transaction_currency IS INITIAL.
-
-      APPEND VALUE #(
-        %tky = header-%tky
-      ) TO failed-header.
-
-      APPEND VALUE #(
-        %tky                         = header-%tky
-        %state_area                  = 'CHECK_REFERENCE'
-        %element-TransactionCurrency = if_abap_behv=>mk-on
-        %msg = NEW zcm_team4_jeh(
-          severity = if_abap_behv_message=>severity-error
-          textid   = zcm_team4_jeh=>currency_required
-        )
-      ) TO reported-header.
-
-    ENDIF.
-
-
-    "------------------------------------------------------------
-    " Validate Header/Sales Order Currency consistency.
-    "
-    " Normally deriveFromSalesOrder copies the Sales Order Currency
-    " to the Header. This check is an additional backend safeguard.
-    "------------------------------------------------------------
-    IF header-TransactionCurrency IS NOT INITIAL
-       AND sales_order-transaction_currency IS NOT INITIAL
-       AND header-TransactionCurrency
-           <> sales_order-transaction_currency.
-
-      APPEND VALUE #(
-        %tky = header-%tky
-      ) TO failed-header.
-
-      APPEND VALUE #(
-        %tky                         = header-%tky
-        %state_area                  = 'CHECK_REFERENCE'
-        %element-TransactionCurrency = if_abap_behv=>mk-on
-        %msg = NEW zcm_team4_jeh(
-          severity = if_abap_behv_message=>severity-error
-          textid   = zcm_team4_jeh=>currency_mismatch
-          attr1    = CONV #( header-TransactionCurrency )
-          attr2    = CONV #(
-            sales_order-transaction_currency
+        APPEND VALUE #(
+          %tky              = header-%tky
+          %state_area       = 'CHECK_REFERENCE'
+          %element-Customer = if_abap_behv=>mk-on
+          %msg = NEW zcm_team4_jeh(
+            severity = if_abap_behv_message=>severity-error
+            textid   = zcm_team4_jeh=>customer_not_exist
+            attr1    = CONV #( header-Customer )
           )
-        )
-      ) TO reported-header.
+        ) TO reported-header.
 
-    ENDIF.
+        CONTINUE.
+
+      ENDIF.
 
 
-    "------------------------------------------------------------
-    " Validate Sales Order Net Amount.
-    "------------------------------------------------------------
-    IF sales_order-net_amount <= 0.
+      "------------------------------------------------------------
+      " Reference is optional for a manual Journal Entry.
+      "
+      " Customer has already been validated at this point.
+      "------------------------------------------------------------
+      IF header-Reference IS INITIAL.
+        CONTINUE.
+      ENDIF.
 
-      APPEND VALUE #(
-        %tky = header-%tky
-      ) TO failed-header.
 
-      APPEND VALUE #(
-        %tky               = header-%tky
-        %state_area        = 'CHECK_REFERENCE'
-        %element-Reference = if_abap_behv=>mk-on
-        %msg = new_message_with_text(
-          severity = if_abap_behv_message=>severity-error
-          text     =
-            |Sales Order { header-Reference } has an invalid Net Amount|
-        )
-      ) TO reported-header.
+      "------------------------------------------------------------
+      " Validate Sales Order existence.
+      "------------------------------------------------------------
+      CLEAR sales_order.
 
-    ENDIF.
+      SELECT SINGLE
+        FROM zteam4_so
+        FIELDS
+          sales_order,
+          customer_id,
+          transaction_currency,
+          net_amount
+        WHERE sales_order = @header-Reference
+        INTO CORRESPONDING FIELDS OF @sales_order.
 
-  ENDLOOP.
+      IF sy-subrc <> 0.
 
-ENDMETHOD.
+        APPEND VALUE #(
+          %tky = header-%tky
+        ) TO failed-header.
+
+        APPEND VALUE #(
+          %tky               = header-%tky
+          %state_area        = 'CHECK_REFERENCE'
+          %element-Reference = if_abap_behv=>mk-on
+          %msg = NEW zcm_team4_jeh(
+            severity = if_abap_behv_message=>severity-error
+            textid   = zcm_team4_jeh=>sales_order_not_exist
+            attr1    = CONV #( header-Reference )
+          )
+        ) TO reported-header.
+
+        CONTINUE.
+
+      ENDIF.
+
+
+      "------------------------------------------------------------
+      " Validate Customer/Sales Order relationship.
+      "------------------------------------------------------------
+      IF sales_order-customer_id <> header-Customer.
+
+        APPEND VALUE #(
+          %tky = header-%tky
+        ) TO failed-header.
+
+        APPEND VALUE #(
+          %tky               = header-%tky
+          %state_area        = 'CHECK_REFERENCE'
+          %element-Reference = if_abap_behv=>mk-on
+          %msg = NEW zcm_team4_jeh(
+            severity = if_abap_behv_message=>severity-error
+            textid   = zcm_team4_jeh=>so_customer_mismatch
+            attr1    = CONV #( header-Reference )
+            attr2    = CONV #( header-Customer )
+          )
+        ) TO reported-header.
+
+      ENDIF.
+
+
+      "------------------------------------------------------------
+      " Validate that Sales Order Currency is available.
+      "------------------------------------------------------------
+      IF sales_order-transaction_currency IS INITIAL.
+
+        APPEND VALUE #(
+          %tky = header-%tky
+        ) TO failed-header.
+
+        APPEND VALUE #(
+          %tky                         = header-%tky
+          %state_area                  = 'CHECK_REFERENCE'
+          %element-TransactionCurrency = if_abap_behv=>mk-on
+          %msg = NEW zcm_team4_jeh(
+            severity = if_abap_behv_message=>severity-error
+            textid   = zcm_team4_jeh=>currency_required
+          )
+        ) TO reported-header.
+
+      ENDIF.
+
+
+      "------------------------------------------------------------
+      " Validate Header/Sales Order Currency consistency.
+      "
+      " Normally deriveFromSalesOrder copies the Sales Order Currency
+      " to the Header. This check is an additional backend safeguard.
+      "------------------------------------------------------------
+      IF header-TransactionCurrency IS NOT INITIAL
+         AND sales_order-transaction_currency IS NOT INITIAL
+         AND header-TransactionCurrency
+             <> sales_order-transaction_currency.
+
+        APPEND VALUE #(
+          %tky = header-%tky
+        ) TO failed-header.
+
+        APPEND VALUE #(
+          %tky                         = header-%tky
+          %state_area                  = 'CHECK_REFERENCE'
+          %element-TransactionCurrency = if_abap_behv=>mk-on
+          %msg = NEW zcm_team4_jeh(
+            severity = if_abap_behv_message=>severity-error
+            textid   = zcm_team4_jeh=>currency_mismatch
+            attr1    = CONV #( header-TransactionCurrency )
+            attr2    = CONV #(
+              sales_order-transaction_currency
+            )
+          )
+        ) TO reported-header.
+
+      ENDIF.
+
+
+      "------------------------------------------------------------
+      " Validate Sales Order Net Amount.
+      "------------------------------------------------------------
+      IF sales_order-net_amount <= 0.
+
+        APPEND VALUE #(
+          %tky = header-%tky
+        ) TO failed-header.
+
+        APPEND VALUE #(
+          %tky               = header-%tky
+          %state_area        = 'CHECK_REFERENCE'
+          %element-Reference = if_abap_behv=>mk-on
+          %msg = new_message_with_text(
+            severity = if_abap_behv_message=>severity-error
+            text     =
+              |Sales Order { header-Reference } has an invalid Net Amount|
+          )
+        ) TO reported-header.
+
+      ENDIF.
+
+    ENDLOOP.
+
+  ENDMETHOD.
 
   METHOD emptyOnSave.
 
@@ -2157,7 +2202,7 @@ CLASS lhc_Item DEFINITION
         FOR VALIDATE ON SAVE
         keys FOR Item~validateItem.
     METHODS validateDocumentBalance FOR VALIDATE ON SAVE IMPORTING
-      keys FOR Item~validateDocumentBalance.
+                                                           keys FOR Item~validateDocumentBalance.
 
 ENDCLASS.
 
@@ -2455,102 +2500,102 @@ CLASS lhc_Item IMPLEMENTATION.
 
   METHOD validateDocumentBalance.
 
-  READ ENTITIES OF zi_team4_jeh IN LOCAL MODE
-    ENTITY Item BY \_Header
-      FIELDS (
-        JournalEntryUUID
-      )
-      WITH CORRESPONDING #( keys )
-    RESULT DATA(lt_parent_headers)
-    LINK DATA(lt_item_header_links).
-
-  LOOP AT keys INTO DATA(ls_item_key).
-
-    "Resolve the parent Header of the changed Item.
-    READ TABLE lt_item_header_links
-      INTO DATA(ls_header_link)
-      WITH KEY source-%tky = ls_item_key-%tky.
-
-    IF sy-subrc <> 0.
-      CONTINUE.
-    ENDIF.
-
-    "Remove the previous document-balance message from the Header.
-    APPEND VALUE #(
-      %tky        = ls_header_link-target-%tky
-      %state_area = 'VALIDATE_DOCUMENT_BALANCE'
-    ) TO reported-header.
-
-    "Read all sibling Items from the current transactional buffer.
     READ ENTITIES OF zi_team4_jeh IN LOCAL MODE
-      ENTITY Header BY \_Items
+      ENTITY Item BY \_Header
         FIELDS (
           JournalEntryUUID
-          ItemNo
-          DebitCredit
-          Amount
         )
-        WITH VALUE #(
-          (
-            %tky = ls_header_link-target-%tky
-          )
-        )
-      RESULT DATA(lt_sibling_items).
+        WITH CORRESPONDING #( keys )
+      RESULT DATA(lt_parent_headers)
+      LINK DATA(lt_item_header_links).
 
-    "A Parked draft may temporarily have no posting Items.
-    IF lt_sibling_items IS INITIAL.
-      CONTINUE.
-    ENDIF.
+    LOOP AT keys INTO DATA(ls_item_key).
 
-    DATA lv_total_debit  TYPE zteam4_jei-amount.
-    DATA lv_total_credit TYPE zteam4_jei-amount.
+      "Resolve the parent Header of the changed Item.
+      READ TABLE lt_item_header_links
+        INTO DATA(ls_header_link)
+        WITH KEY source-%tky = ls_item_key-%tky.
 
-    CLEAR:
-      lv_total_debit,
-      lv_total_credit.
+      IF sy-subrc <> 0.
+        CONTINUE.
+      ENDIF.
 
-    "Calculate totals from the complete Item set.
-    LOOP AT lt_sibling_items INTO DATA(ls_sibling_item).
-
-      CASE to_upper( ls_sibling_item-DebitCredit ).
-
-        WHEN 'S' OR 'D'.
-          lv_total_debit += ls_sibling_item-Amount.
-
-        WHEN 'H' OR 'C'.
-          lv_total_credit += ls_sibling_item-Amount.
-
-      ENDCASE.
-
-    ENDLOOP.
-
-    "Reject the transaction when debit and credit are not balanced.
-    IF lv_total_debit <= 0
-       OR lv_total_credit <= 0
-       OR lv_total_debit <> lv_total_credit.
-
-      "Block the Item update that triggered this validation.
-      APPEND VALUE #(
-        %tky = ls_item_key-%tky
-      ) TO failed-item.
-
-      "Report the document-level message on the parent Header.
+      "Remove the previous document-balance message from the Header.
       APPEND VALUE #(
         %tky        = ls_header_link-target-%tky
         %state_area = 'VALIDATE_DOCUMENT_BALANCE'
-        %msg        = NEW zcm_team4_jeh(
-          severity = if_abap_behv_message=>severity-error
-          textid   = zcm_team4_jeh=>entry_not_balanced
-          attr1    = |{ lv_total_debit NUMBER = USER }|
-          attr2    = |{ lv_total_credit NUMBER = USER }|
-        )
       ) TO reported-header.
 
-    ENDIF.
+      "Read all sibling Items from the current transactional buffer.
+      READ ENTITIES OF zi_team4_jeh IN LOCAL MODE
+        ENTITY Header BY \_Items
+          FIELDS (
+            JournalEntryUUID
+            ItemNo
+            DebitCredit
+            Amount
+          )
+          WITH VALUE #(
+            (
+              %tky = ls_header_link-target-%tky
+            )
+          )
+        RESULT DATA(lt_sibling_items).
 
-  ENDLOOP.
+      "A Parked draft may temporarily have no posting Items.
+      IF lt_sibling_items IS INITIAL.
+        CONTINUE.
+      ENDIF.
 
-ENDMETHOD.
+      DATA lv_total_debit  TYPE zteam4_jei-amount.
+      DATA lv_total_credit TYPE zteam4_jei-amount.
+
+      CLEAR:
+        lv_total_debit,
+        lv_total_credit.
+
+      "Calculate totals from the complete Item set.
+      LOOP AT lt_sibling_items INTO DATA(ls_sibling_item).
+
+        CASE to_upper( ls_sibling_item-DebitCredit ).
+
+          WHEN 'S' OR 'D'.
+            lv_total_debit += ls_sibling_item-Amount.
+
+          WHEN 'H' OR 'C'.
+            lv_total_credit += ls_sibling_item-Amount.
+
+        ENDCASE.
+
+      ENDLOOP.
+
+      "Reject the transaction when debit and credit are not balanced.
+      IF lv_total_debit <= 0
+         OR lv_total_credit <= 0
+         OR lv_total_debit <> lv_total_credit.
+
+        "Block the Item update that triggered this validation.
+        APPEND VALUE #(
+          %tky = ls_item_key-%tky
+        ) TO failed-item.
+
+        "Report the document-level message on the parent Header.
+        APPEND VALUE #(
+          %tky        = ls_header_link-target-%tky
+          %state_area = 'VALIDATE_DOCUMENT_BALANCE'
+          %msg        = NEW zcm_team4_jeh(
+            severity = if_abap_behv_message=>severity-error
+            textid   = zcm_team4_jeh=>entry_not_balanced
+            attr1    = |{ lv_total_debit NUMBER = USER }|
+            attr2    = |{ lv_total_credit NUMBER = USER }|
+          )
+        ) TO reported-header.
+
+      ENDIF.
+
+    ENDLOOP.
+
+  ENDMETHOD.
 
 
 ENDCLASS.
