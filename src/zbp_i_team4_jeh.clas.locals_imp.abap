@@ -83,6 +83,8 @@ CLASS lhc_Header DEFINITION
        keys FOR Header~deriveCustomerName.
     METHODS ownerIsUser FOR VALIDATE ON SAVE
        keys FOR Header~ownerIsUser.
+    METHODS GetDefaultsForClear FOR READ
+       keys FOR FUNCTION Header~GetDefaultsForClear RESULT result.
 
 
     METHODS get_next_number
@@ -466,7 +468,7 @@ CLASS lhc_Header IMPLEMENTATION.
         CONTINUE.
       ENDIF.
 
-            " ---- popup parameters and checks ----
+      " ---- popup parameters and checks ----
       DATA(param) = keys[ KEY entity %tky = header-%tky ]-%param.
 
       " Blank date in the popup means today
@@ -475,11 +477,11 @@ CLASS lhc_Header IMPLEMENTATION.
         THEN cl_abap_context_info=>get_system_date( )
         ELSE param-ClearingDate ).
 
-      SELECT SINGLE gl_account
-        FROM zteam4_custbank
-        WHERE customer = @header-Customer
-          AND bank_id  = @param-BankId
-        INTO @DATA(bank_gl).
+      SELECT SINGLE gl_account, balance
+  FROM zteam4_custbank
+  WHERE customer = @header-Customer
+    AND bank_id  = @param-BankId
+  INTO @DATA(bank).
       DATA(bank_found) = xsdbool( sy-subrc = 0 ).
 
       DATA(error_text) = VALUE string( ).
@@ -488,6 +490,8 @@ CLASS lhc_Header IMPLEMENTATION.
         error_text = 'Select a bank account that belongs to this customer'.
       ELSEIF clearing_date < header-PostingDate.
         error_text = 'Clearing date cannot be before the posting date'.
+      ELSEIF bank-balance < header-GrossAmount.
+        error_text = 'Insufficient bank balance to pay this invoice'.
       ENDIF.
 
       IF error_text IS NOT INITIAL.
@@ -527,7 +531,7 @@ CLASS lhc_Header IMPLEMENTATION.
               StatusCriticality = 3
               StatusText        = 'Cleared'
               PaymentBankId     = param-BankId
-              PaymentBankGL     = bank_gl
+              PaymentBankGL     = bank-gl_account
               PaymentReference  = param-PaymentReference
             )
           )
@@ -2182,6 +2186,43 @@ CLASS lhc_Header IMPLEMENTATION.
           )
         ) TO reported-header.
 
+      ENDIF.
+
+    ENDLOOP.
+
+  ENDMETHOD.
+
+  METHOD getdefaultsforclear.
+
+    READ ENTITIES OF zi_team4_jeh IN LOCAL MODE
+      ENTITY Header
+        FIELDS ( DocumentNumber Customer CustomerName DueDate
+                 GrossAmount TransactionCurrency )
+        WITH CORRESPONDING #( keys )
+      RESULT DATA(headers).
+
+    DATA(today) = cl_abap_context_info=>get_system_date( ).
+
+    LOOP AT headers INTO DATA(h).
+
+      INSERT VALUE #( %tky = h-%tky ) INTO TABLE result REFERENCE INTO DATA(new_line).
+
+      new_line->%param-DocumentNumber = h-DocumentNumber.
+      new_line->%param-Customer       = h-Customer.
+      new_line->%param-CustomerName   = h-CustomerName.
+      new_line->%param-DueDate        = h-DueDate.
+      new_line->%param-GrossAmount    = h-GrossAmount.
+      new_line->%param-Currency       = h-TransactionCurrency.
+      new_line->%param-ClearingDate   = today.
+
+      " Preselect the bank when the customer has exactly one
+      SELECT bank_id, balance
+        FROM zteam4_custbank
+        WHERE customer = @h-Customer
+        INTO TABLE @DATA(banks).
+      IF lines( banks ) = 1.
+        new_line->%param-BankId      = banks[ 1 ]-bank_id.
+        new_line->%param-BankBalance = banks[ 1 ]-balance.
       ENDIF.
 
     ENDLOOP.

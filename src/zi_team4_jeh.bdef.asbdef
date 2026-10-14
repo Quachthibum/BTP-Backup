@@ -111,7 +111,12 @@ etag master LocalLastChangedAt
 
   action ( features : instance ) GeneratePostings result [1] $self;
   action ( features : instance ) Post result [1] $self;
-  action ( features : instance ) Clear parameter ZA_TEAM4_CLEAR_PARAM result [1] $self;
+    action ( features : instance ) Clear
+    parameter ZA_TEAM4_CLEAR_PARAM
+    result [1] $self
+  {
+    default function GetDefaultsForClear;
+  }
 
   // Lock Edit button when not parked / already cleared
   draft action ( features : instance ) Edit;

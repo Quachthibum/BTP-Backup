@@ -21,5 +21,10 @@ define view entity ZI_TEAM4_CUSTBANK
       @UI.lineItem: [{ position: 30 }]
       bank_account as BankAccount,
 
-      gl_account   as GlAccount
+      gl_account   as GlAccount,
+      currency     as Currency,
+      @Semantics.amount.currencyCode: 'Currency'
+      @UI.lineItem: [{ position: 40 }]
+      @EndUserText.label: 'Balance'
+      balance      as Balance
 }
