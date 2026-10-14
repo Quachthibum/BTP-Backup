@@ -160,6 +160,7 @@ annotate entity ZC_TEAM4_JEH with
   @UI.selectionField: [{ position: 30 }]
   @UI.lineItem: [{ position: 20, importance: #HIGH, criticality: 'StatusCriticality' }]
   @UI.identification: [{ position: 5, criticality: 'StatusCriticality' }]
+  @UI.fieldGroup: [{ qualifier: 'General', position: 110, criticality: 'StatusCriticality' }]
   StatusText;
 
   @UI.hidden: true

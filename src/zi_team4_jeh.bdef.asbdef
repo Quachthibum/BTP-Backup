@@ -38,10 +38,20 @@ etag master LocalLastChangedAt
 
   // Dynamic field control: lock after Reference selection
   field ( features : instance )
+  CompanyCode,
+  FiscalYear,
+  DocumentType,
+  DocumentDate,
+  PostingDate,
+  TransactionCurrency,
+  DueDate,
+  Customer,
+  Reference,
   NetAmount,
   TaxRate;
 
-  field ( mandatory )
+
+  field ( mandatory)
   CompanyCode,
   FiscalYear,
   DocumentType,

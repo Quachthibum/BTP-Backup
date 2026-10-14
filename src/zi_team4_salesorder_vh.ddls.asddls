@@ -20,7 +20,7 @@ define view entity ZI_TEAM4_SALESORDER_VH
         when 'CUST07' then cast( '7000' as abap.char( 4 ) )
         when 'CUST08' then cast( '8000' as abap.char( 4 ) )
         when 'CUST09' then cast( '9000' as abap.char( 4 ) )
-        when 'CUST10' then cast( '10000' as abap.char( 5 ) )
+        when 'CUST10' then cast( '1010' as abap.char( 4 ) )
         else cast( '1000' as abap.char( 4 ) )
       end                  as CompanyCode,
 

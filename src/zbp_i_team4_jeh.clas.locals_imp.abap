@@ -25,7 +25,7 @@ CLASS lhc_Header DEFINITION
       gc_tax_code        TYPE zteam4_jei-tax_code VALUE 'A1',
 
       "Mock technical users used to simulate workflow roles.
-      gc_user_chief      TYPE string VALUE 'CB9980000333',
+      gc_user_chief      TYPE string VALUE 'CB9980001379',
       gc_user_accountant TYPE string VALUE 'CB9980001379'.
 
     "----------------------------------------------------------
@@ -211,134 +211,228 @@ CLASS lhc_Header IMPLEMENTATION.
         cl_abap_context_info=>get_user_technical_name( )
       ).
 
-    DATA(is_chief_user) =
+    DATA(lv_is_chief) =
       xsdbool(
         lv_user = gc_user_chief
       ).
 
-    DATA(is_accountant_user) =
+    DATA(lv_is_accountant) =
       xsdbool(
         lv_user = gc_user_accountant
       ).
 
-    DATA(is_known_user) =
+    DATA(lv_is_known_user) =
       xsdbool(
-        is_chief_user = abap_true
-        OR is_accountant_user = abap_true
+        lv_is_chief = abap_true
+        OR lv_is_accountant = abap_true
       ).
-
+    "Read the Header status and fields required by feature control.
     READ ENTITIES OF zi_team4_jeh IN LOCAL MODE
       ENTITY Header
         FIELDS (
+          JournalEntryUUID
           Status
           Reference
         )
         WITH CORRESPONDING #( keys )
-      RESULT DATA(headers).
+      RESULT DATA(lt_headers).
 
+    "Read existing Items to control Generate/Post availability.
     READ ENTITIES OF zi_team4_jeh IN LOCAL MODE
       ENTITY Header BY \_Items
         FIELDS (
           JournalEntryUUID
+          ItemNo
         )
         WITH CORRESPONDING #( keys )
-      RESULT DATA(items).
+      RESULT DATA(lt_items).
 
     result = VALUE #(
-      FOR header IN headers
+      FOR ls_header IN lt_headers
 
-      LET has_items =
+      LET
+          lv_has_items =
             xsdbool(
               line_exists(
-                items[
-                  JournalEntryUUID = header-JournalEntryUUID
+                lt_items[
+                  JournalEntryUUID = ls_header-JournalEntryUUID
                 ]
               )
             )
 
-          is_ref_selected =
+          lv_has_reference =
             xsdbool(
-              header-Reference IS NOT INITIAL
+              ls_header-Reference IS NOT INITIAL
             )
 
-          is_cleared =
+          lv_is_cleared =
             xsdbool(
-              header-Status = gc_status_cleared
+              ls_header-Status = gc_status_cleared
             )
 
-          is_open =
+          lv_is_open =
             xsdbool(
-              header-Status = gc_status_open
+              ls_header-Status = gc_status_open
             )
 
-          is_parked =
+          lv_is_parked =
             xsdbool(
-              header-Status = gc_status_parked
+              ls_header-Status = gc_status_parked
             )
 
-          can_edit =
+          "Parked and Posted/Open documents may enter Edit mode.
+          lv_can_edit =
             xsdbool(
-              is_known_user = abap_true
-              AND is_cleared = abap_false
+              lv_is_known_user = abap_true
+              AND lv_is_cleared = abap_false
             )
+
+          "General accounting fields are editable only while Parked.
+           lv_parked_fields_editable =
+             xsdbool(
+               lv_is_known_user = abap_true
+               AND lv_is_parked = abap_true
+             )
+
+
+           "Due Date may be edited for Parked and Posted/Open documents.
+            lv_due_date_editable =
+              xsdbool(
+                lv_is_known_user = abap_true
+                AND (
+                  lv_is_parked = abap_true
+                  OR lv_is_open = abap_true
+                )
+              )
+
+            "Manual amounts are editable only for a manual Parked JE.
+            lv_manual_amount_editable =
+              xsdbool(
+                lv_parked_fields_editable = abap_true
+                AND lv_has_reference = abap_false
+              )
+
 
       IN
       (
-        %tky = header-%tky
+        %tky = ls_header-%tky
 
         %action-Edit = COND #(
-          WHEN can_edit = abap_true
+          WHEN lv_can_edit = abap_true
             THEN if_abap_behv=>fc-o-enabled
           ELSE
             if_abap_behv=>fc-o-disabled
         )
 
         %update = COND #(
-          WHEN can_edit = abap_true
+          WHEN lv_can_edit = abap_true
             THEN if_abap_behv=>fc-o-enabled
           ELSE
             if_abap_behv=>fc-o-disabled
         )
 
         %delete = COND #(
-          WHEN is_known_user = abap_true
-           AND is_parked = abap_true
+          WHEN lv_is_known_user = abap_true
+           AND lv_is_parked = abap_true
             THEN if_abap_behv=>fc-o-enabled
           ELSE
             if_abap_behv=>fc-o-disabled
         )
 
+        %field-CompanyCode = COND #(
+        WHEN lv_parked_fields_editable = abap_true
+          THEN if_abap_behv=>fc-f-unrestricted
+        ELSE
+          if_abap_behv=>fc-f-read_only
+      )
+
+      %field-FiscalYear = COND #(
+        WHEN lv_parked_fields_editable = abap_true
+          THEN if_abap_behv=>fc-f-unrestricted
+        ELSE
+          if_abap_behv=>fc-f-read_only
+      )
+
+      %field-DocumentType = COND #(
+        WHEN lv_parked_fields_editable = abap_true
+          THEN if_abap_behv=>fc-f-unrestricted
+        ELSE
+          if_abap_behv=>fc-f-read_only
+      )
+
+      %field-DocumentDate = COND #(
+        WHEN lv_parked_fields_editable = abap_true
+          THEN if_abap_behv=>fc-f-unrestricted
+        ELSE
+          if_abap_behv=>fc-f-read_only
+      )
+
+      %field-PostingDate = COND #(
+        WHEN lv_parked_fields_editable = abap_true
+          THEN if_abap_behv=>fc-f-unrestricted
+        ELSE
+          if_abap_behv=>fc-f-read_only
+      )
+
+      %field-TransactionCurrency = COND #(
+        WHEN lv_parked_fields_editable = abap_true
+          THEN if_abap_behv=>fc-f-unrestricted
+        ELSE
+          if_abap_behv=>fc-f-read_only
+      )
+
+      "Due Date remains editable after Posting.
+      %field-DueDate = COND #(
+        WHEN lv_due_date_editable = abap_true
+          THEN if_abap_behv=>fc-f-unrestricted
+        ELSE
+          if_abap_behv=>fc-f-read_only
+      )
+
+      %field-Customer = COND #(
+        WHEN lv_parked_fields_editable = abap_true
+          THEN if_abap_behv=>fc-f-unrestricted
+        ELSE
+          if_abap_behv=>fc-f-read_only
+      )
+
+      %field-Reference = COND #(
+        WHEN lv_parked_fields_editable = abap_true
+          THEN if_abap_behv=>fc-f-unrestricted
+        ELSE
+          if_abap_behv=>fc-f-read_only
+      )
+        "Net Amount is manually editable only when there is no
         %field-NetAmount = COND #(
-          WHEN is_ref_selected = abap_true
-            OR is_cleared = abap_true
-            THEN if_abap_behv=>fc-f-read_only
+          WHEN lv_manual_amount_editable = abap_true
+            THEN if_abap_behv=>fc-f-unrestricted
           ELSE
-            if_abap_behv=>fc-f-unrestricted
+            if_abap_behv=>fc-f-read_only
         )
 
         %field-TaxRate = COND #(
-          WHEN is_ref_selected = abap_true
-            OR is_cleared = abap_true
-            THEN if_abap_behv=>fc-f-read_only
+          WHEN lv_manual_amount_editable = abap_true
+            THEN if_abap_behv=>fc-f-unrestricted
           ELSE
-            if_abap_behv=>fc-f-unrestricted
+            if_abap_behv=>fc-f-read_only
         )
+
 
         " Manual Item creation is allowed only for manual Parked JEs.
         %assoc-_Items = COND #(
-          WHEN is_known_user = abap_true
-           AND is_parked = abap_true
-           AND is_ref_selected = abap_false
+          WHEN lv_is_known_user = abap_true
+           AND lv_is_parked = abap_true
+           AND lv_has_reference = abap_false
             THEN if_abap_behv=>fc-o-enabled
           ELSE
             if_abap_behv=>fc-o-disabled
         )
 
         %action-GeneratePostings = COND #(
-          WHEN is_known_user = abap_true
-           AND is_parked = abap_true
-           AND has_items = abap_false
-           AND is_ref_selected = abap_false
+          WHEN lv_is_known_user = abap_true
+           AND lv_is_parked = abap_true
+           AND lv_has_reference = abap_false
+           AND lv_has_items = abap_false
             THEN if_abap_behv=>fc-o-enabled
           ELSE
             if_abap_behv=>fc-o-disabled
@@ -346,9 +440,9 @@ CLASS lhc_Header IMPLEMENTATION.
 
         " Chief Accountant only.
         %action-Post = COND #(
-          WHEN is_chief_user = abap_true
-           AND is_parked = abap_true
-           AND has_items = abap_true
+          WHEN lv_is_chief = abap_true
+           AND lv_is_parked = abap_true
+           AND lv_has_items = abap_true
             THEN if_abap_behv=>fc-o-enabled
           ELSE
             if_abap_behv=>fc-o-disabled
@@ -356,8 +450,8 @@ CLASS lhc_Header IMPLEMENTATION.
 
         " Chief Accountant only.
         %action-Clear = COND #(
-          WHEN is_chief_user = abap_true
-           AND is_open = abap_true
+          WHEN lv_is_chief = abap_true
+           AND lv_is_open = abap_true
             THEN if_abap_behv=>fc-o-enabled
           ELSE
             if_abap_behv=>fc-o-disabled
