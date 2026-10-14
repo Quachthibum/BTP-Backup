@@ -13,6 +13,7 @@ use etag
   use action GeneratePostings;
   use action Post;
   use action Clear;
+  use function GetDefaultsForClear;
 
   use association _Items
   {

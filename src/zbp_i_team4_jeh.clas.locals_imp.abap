@@ -25,7 +25,7 @@ CLASS lhc_Header DEFINITION
       gc_tax_code        TYPE zteam4_jei-tax_code VALUE 'A1',
 
       "Mock technical users used to simulate workflow roles.
-      gc_user_chief      TYPE string VALUE 'CB9980001379',
+      gc_user_chief      TYPE string VALUE 'CB9980000333',
       gc_user_accountant TYPE string VALUE 'CB9980001379'.
 
     "----------------------------------------------------------

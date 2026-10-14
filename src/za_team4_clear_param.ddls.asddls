@@ -17,6 +17,7 @@ define abstract entity ZA_TEAM4_CLEAR_PARAM
   @Semantics.amount.currencyCode: 'Currency'
   GrossAmount      : abap.curr(15,2);
 
+  @UI.hidden: true
   @EndUserText.label: 'Currency'
   Currency         : abap.cuky;
 
