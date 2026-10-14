@@ -341,42 +341,42 @@ CLASS lhc_Header IMPLEMENTATION.
 
         %field-CompanyCode = COND #(
         WHEN lv_parked_fields_editable = abap_true
-          THEN if_abap_behv=>fc-f-unrestricted
+          THEN if_abap_behv=>fc-f-mandatory
         ELSE
           if_abap_behv=>fc-f-read_only
       )
 
       %field-FiscalYear = COND #(
         WHEN lv_parked_fields_editable = abap_true
-          THEN if_abap_behv=>fc-f-unrestricted
+          THEN if_abap_behv=>fc-f-mandatory
         ELSE
           if_abap_behv=>fc-f-read_only
       )
 
       %field-DocumentType = COND #(
         WHEN lv_parked_fields_editable = abap_true
-          THEN if_abap_behv=>fc-f-unrestricted
+          THEN if_abap_behv=>fc-f-mandatory
         ELSE
           if_abap_behv=>fc-f-read_only
       )
 
       %field-DocumentDate = COND #(
         WHEN lv_parked_fields_editable = abap_true
-          THEN if_abap_behv=>fc-f-unrestricted
+          THEN if_abap_behv=>fc-f-mandatory
         ELSE
           if_abap_behv=>fc-f-read_only
       )
 
       %field-PostingDate = COND #(
         WHEN lv_parked_fields_editable = abap_true
-          THEN if_abap_behv=>fc-f-unrestricted
+          THEN if_abap_behv=>fc-f-mandatory
         ELSE
           if_abap_behv=>fc-f-read_only
       )
 
       %field-TransactionCurrency = COND #(
         WHEN lv_parked_fields_editable = abap_true
-          THEN if_abap_behv=>fc-f-unrestricted
+          THEN if_abap_behv=>fc-f-mandatory
         ELSE
           if_abap_behv=>fc-f-read_only
       )
@@ -384,14 +384,14 @@ CLASS lhc_Header IMPLEMENTATION.
       "Due Date remains editable after Posting.
       %field-DueDate = COND #(
         WHEN lv_due_date_editable = abap_true
-          THEN if_abap_behv=>fc-f-unrestricted
+          THEN if_abap_behv=>fc-f-mandatory
         ELSE
           if_abap_behv=>fc-f-read_only
       )
 
       %field-Customer = COND #(
         WHEN lv_parked_fields_editable = abap_true
-          THEN if_abap_behv=>fc-f-unrestricted
+          THEN if_abap_behv=>fc-f-mandatory
         ELSE
           if_abap_behv=>fc-f-read_only
       )
